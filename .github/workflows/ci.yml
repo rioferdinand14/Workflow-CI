@@ -21,14 +21,6 @@ jobs:
       - name: Install Conda
         uses: conda-incubator/setup-miniconda@v2
         with:
-          python-version: 3.12
-          auto-activate-base: false
-          environment-file: MLProject/conda.yaml
-          activate-environment: bc_ci_env
-
-      - name: Install Conda
-        uses: conda-incubator/setup-miniconda@v2
-        with:
           activate-environment: bc_ci_env
           environment-file: ./MLProject/conda.yaml
           auto-activate-base: false
