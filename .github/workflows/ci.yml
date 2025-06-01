@@ -28,7 +28,7 @@ jobs:
 
       - name: Install MLflow (dan dependencies jika perlu)
         run: |
-          conda init
+          conda init bash
           conda activate bc_ci_env
           pip install mlflow==2.19.0
 
