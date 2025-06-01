@@ -1,0 +1,10 @@
+name: bc_ci_env
+channels:
+  - defaults
+dependencies:
+  - python=3.12.*
+  - pip
+  - pip:
+    - pandas
+    - scikit-learn
+    - mlflow==2.19.0
