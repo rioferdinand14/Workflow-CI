@@ -18,21 +18,18 @@ def main():
     # Aktifkan autolog
     mlflow.sklearn.autolog()
 
-    # Mulai run MLflow
-    with mlflow.start_run():
-        # Contoh model: Random Forest
-        model = RandomForestClassifier(random_state=42)
-        model.fit(X_train, y_train)
+    # Contoh model: Random Forest
+    model = RandomForestClassifier(random_state=42)
+    model.fit(X_train, y_train)
 
-        # Prediksi dan evaluasi
-        preds = model.predict(X_test)
-        acc = accuracy_score(y_test, preds)
-        try:
-            # Jika classifier mendukung predict_proba
-            auc = roc_auc_score(y_test, model.predict_proba(X_test)[:, 1])
-            print(f"Test Accuracy: {acc:.4f}, AUC: {auc:.4f}")
-        except Exception:
-            print(f"Test Accuracy: {acc:.4f}")
+    # Prediksi dan evaluasi
+    preds = model.predict(X_test)
+    acc = accuracy_score(y_test, preds)
+    try:
+        auc = roc_auc_score(y_test, model.predict_proba(X_test)[:, 1])
+        print(f"Test Accuracy: {acc:.4f}, AUC: {auc:.4f}")
+    except Exception:
+        print(f"Test Accuracy: {acc:.4f}")
 
 if __name__ == "__main__":
     main()
