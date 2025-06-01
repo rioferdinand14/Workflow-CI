@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Ferdinand/Downloads/Eksperimen_SML_Rio/modelling/mlruns/582732932392711034/4b23805f8dce491e96c2666ec5bbcd78/artifacts
+end_time: 1748795139388
+entry_point_name: ''
+experiment_id: '582732932392711034'
+lifecycle_stage: active
+run_id: 4b23805f8dce491e96c2666ec5bbcd78
+run_name: worried-worm-122
+run_uuid: 4b23805f8dce491e96c2666ec5bbcd78
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1748795133975
+status: 3
+tags: []
+user_id: ferdinand
