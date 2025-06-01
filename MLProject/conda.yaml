@@ -1,5 +1,6 @@
 name: bc_ci_env
 channels:
+  - conda
   - defaults
 dependencies:
   - python=3.12.*
