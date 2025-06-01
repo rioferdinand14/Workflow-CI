@@ -29,4 +29,4 @@ jobs:
         shell: bash -l {0}  # ⬅️ PENTING! agar conda init bisa bekerja
         run: |
           cd MLProject
-          mlflow run . --env-manager=local
+          mlflow run . -e train --env-manager=local
