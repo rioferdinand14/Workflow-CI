@@ -26,7 +26,7 @@ jobs:
           auto-activate-base: false
 
       - name: Run MLflow Project
+        shell: bash -l {0}  # ⬅️ PENTING! agar conda init bisa bekerja
         run: |
-          conda activate bc_ci_env
           cd MLProject
           mlflow run . --env-manager=local
