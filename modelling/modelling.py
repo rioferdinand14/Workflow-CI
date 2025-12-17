@@ -32,8 +32,9 @@ def main():
     mlflow.set_tracking_uri("file:mlruns")
     mlflow.set_experiment("BreastCancer")
     
-    with mlflow.start_run() as run:
-        mlflow.sklearn.autolog()
+    mlflow.sklearn.autolog()
+    
+    with mlflow.start_run():
 
         model = RandomForestClassifier(n_estimators=100, random_state=42)
         model.fit(X_train, y_train)
