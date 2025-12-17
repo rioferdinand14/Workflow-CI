@@ -32,28 +32,28 @@ def main():
     mlflow.set_tracking_uri("file:mlruns")
     mlflow.set_experiment("BreastCancer")
     
-    with mlflow.start_run() as run:
-        mlflow.sklearn.autolog()
+    
+    mlflow.sklearn.autolog()
 
-        model = RandomForestClassifier(n_estimators=100, random_state=42)
-        model.fit(X_train, y_train)
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model.fit(X_train, y_train)
 
-        preds = model.predict(X_test)
-        acc = accuracy_score(y_test, preds)
-        print(f"Accuracy: {acc:.4f}")
+    preds = model.predict(X_test)
+    acc = accuracy_score(y_test, preds)
+    print(f"Accuracy: {acc:.4f}")
 
-        mlflow.log_param("selected_features", str(selected_features))
-        mlflow.log_metric("final_accuracy", acc)
+    # mlflow.log_param("selected_features", str(selected_features))
+    # mlflow.log_metric("final_accuracy", acc)
 
-        signature = mlflow.models.infer_signature(X_train, model.predict(X_train))
-        mlflow.sklearn.log_model(model, "model", signature=signature)
+    # signature = mlflow.models.infer_signature(X_train, model.predict(X_train))
+    # mlflow.sklearn.log_model(model, "model", signature=signature)
 
-        production_path = "./monitoring/model_production" 
-        
-        if os.path.exists(production_path):
-            shutil.rmtree(production_path)
-        
-        mlflow.artifacts.download_artifacts(artifact_uri=f"runs:/{run.info.run_id}/model", dst_path=production_path)
+    # production_path = "./monitoring/model_production" 
+    
+    # if os.path.exists(production_path):
+    #     shutil.rmtree(production_path)
+    
+    # mlflow.artifacts.download_artifacts(artifact_uri=f"runs:/{run.info.run_id}/model", dst_path=production_path)
 
 if __name__ == "__main__":
     main()
