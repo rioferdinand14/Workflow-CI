@@ -1,7 +1,5 @@
 import pandas as pd
 import numpy as np
-import os
-import shutil
 import mlflow
 import mlflow.sklearn
 from sklearn.datasets import load_breast_cancer
@@ -41,19 +39,6 @@ def main():
     preds = model.predict(X_test)
     acc = accuracy_score(y_test, preds)
     print(f"Accuracy: {acc:.4f}")
-
-    # mlflow.log_param("selected_features", str(selected_features))
-    # mlflow.log_metric("final_accuracy", acc)
-
-    # signature = mlflow.models.infer_signature(X_train, model.predict(X_train))
-    # mlflow.sklearn.log_model(model, "model", signature=signature)
-
-    # production_path = "./monitoring/model_production" 
-    
-    # if os.path.exists(production_path):
-    #     shutil.rmtree(production_path)
-    
-    # mlflow.artifacts.download_artifacts(artifact_uri=f"runs:/{run.info.run_id}/model", dst_path=production_path)
 
 if __name__ == "__main__":
     main()
