@@ -6,14 +6,12 @@ import time
 import os
 import pickle
 
-# --- KONFIGURASI HALAMAN ---
 st.set_page_config(
     page_title="Breast Cancer AI System",
     page_icon="🎗️",
     layout="wide"
 )
 
-# --- CSS CUSTOM ---
 st.markdown("""
     <style>
     .stButton>button {
@@ -32,7 +30,7 @@ st.markdown("""
 
 @st.cache_resource
 def load_model():
-    with open("view/model.pkl", "rb") as f: # Pastikan path benar
+    with open("view/model.pkl", "rb") as f: 
         model = pickle.load(f)
     return model
 
@@ -45,7 +43,6 @@ except FileNotFoundError:
 st.title("🎗️ Breast Cancer Prediction")
 st.markdown("Sistem diagnosis berbasis AI.")
 
-# --- FUNGSI INPUT PINTAR ---
 def smart_input(label, key, min_val, max_val, default, step=0.01):
     k_slider = f"{key}_slider"
     k_input = f"{key}_input"
@@ -64,7 +61,6 @@ def smart_input(label, key, min_val, max_val, default, step=0.01):
 
     return st.session_state[k_input]
 
-# --- SIDEBAR INPUT (10 FITUR SPESIFIK) ---
 st.sidebar.header("📝 Input Data Klinis")
 input_data = {}
 
@@ -124,26 +120,18 @@ with col2:
 if predict_btn:
     try:
         with st.spinner('Memproses Diagnosa...'):
-            # 1. Konversi input data (dict) menjadi Numpy Array 2D
-            # input_data adalah dictionary yang Anda buat dari form slider
+
             input_values = list(input_data.values())
             input_array = np.array(input_values).reshape(1, -1)
 
-            # 2. Prediksi Langsung (Tanpa Internet/API)
             start_time = time.time()
             prediction = model.predict(input_array)[0]
-            
-            # Coba ambil probabilitas jika model mendukung
-            try:
-                probability = model.predict_proba(input_array).max()
-            except:
-                probability = 0.0 # Fallback jika model tidak support probability
             
             end_time = time.time()
             latency = round((end_time - start_time), 4)
 
         # 3. Tampilkan Hasil
-        st.success(f"Selesai dalam {latency} detik (Running Locally)")
+        st.success(f"Selesai dalam {latency} detik")
 
         if prediction == 1: # Benign
             st.markdown("""
@@ -161,9 +149,6 @@ if predict_btn:
                     <p style="text-align: center;">Terdeteksi karakteristik sel kanker ganas.</p>
                 </div>
             """, unsafe_allow_html=True)
-            
-        # Tampilkan confidence score
-        st.info(f"Tingkat Kepercayaan Model: {probability:.2%}")
 
     except Exception as e:
         st.error(f"Terjadi kesalahan saat prediksi: {e}")

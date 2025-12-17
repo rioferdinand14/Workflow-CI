@@ -6,8 +6,7 @@ import pandas as pd
 
 app = FastAPI()
 
-# 1. Load Model saat aplikasi nyala (biar cepat, gak load berulang-ulang)
-# Pastikan nama file sesuai dengan yang Anda copy
+
 with open("model.pkl", "rb") as f:
     model = pickle.load(f)
 

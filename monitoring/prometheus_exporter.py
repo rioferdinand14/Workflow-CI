@@ -20,24 +20,23 @@ def metrics():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    print("\n[INFO] 1. Menerima Request dari Streamlit...") # DEBUG
+    print("\n[INFO] 1. Menerima Request dari Streamlit...") 
     start_time = time.time()
     REQUEST_COUNT.inc()
 
-    # URL MLFLOW (Pastikan Port 5002)
     api_url = "http://127.0.0.1:5002/invocations"
     
     try:
         data = request.get_json()
-        print(f"[INFO] 2. Data diterima: {str(data)[:100]}...") # DEBUG: Cek isi data
+        print(f"[INFO] 2. Data diterima: {str(data)[:100]}...")
         
-        print(f"[INFO] 3. Mengirim ke MLflow ({api_url})...") # DEBUG
+        print(f"[INFO] 3. Mengirim ke MLflow ({api_url})...") 
         response = requests.post(api_url, json=data)
         
-        print(f"[INFO] 4. Jawaban MLflow: Status {response.status_code}") # DEBUG
+        print(f"[INFO] 4. Jawaban MLflow: Status {response.status_code}") 
         
         if response.status_code != 200:
-            print(f"[ERROR] MLflow Error: {response.text}") # DEBUG: Print error MLflow
+            print(f"[ERROR] MLflow Error: {response.text}")
             return jsonify({"error": "MLflow Error", "detail": response.text}), response.status_code
 
         duration = time.time() - start_time
@@ -46,7 +45,7 @@ def predict():
         return jsonify(response.json())
 
     except Exception as e:
-        print(f"[ERROR] CRITICAL: {e}") # DEBUG
+        print(f"[ERROR] CRITICAL: {e}") 
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
