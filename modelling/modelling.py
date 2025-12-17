@@ -8,7 +8,7 @@ from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import RFE
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, roc_auc_score
 
 def main():
     data = load_breast_cancer()
@@ -42,16 +42,20 @@ def main():
         acc = accuracy_score(y_test, preds)
         print(f"Accuracy: {acc:.4f}")
 
-        mlflow.log_param("selected_features", str(selected_features))
-        mlflow.log_metric("final_accuracy", acc)
+        try:
+            # Jika classifier mendukung predict_proba
+            auc = roc_auc_score(y_test, model.predict_proba(X_test)[:, 1])
+            print(f"Test Accuracy: {acc:.4f}, AUC: {auc:.4f}")
+        except Exception:
+            print(f"Test Accuracy: {acc:.4f}")
 
-        signature = mlflow.models.infer_signature(X_train, model.predict(X_train))
-        mlflow.sklearn.log_model(model, "model", signature=signature)
+        # signature = mlflow.models.infer_signature(X_train, model.predict(X_train))
+        # mlflow.sklearn.log_model(model, "model", signature=signature)
 
-        production_path = "./monitoring/model_production" 
+        # production_path = "./monitoring/model_production" 
         
-        if os.path.exists(production_path):
-            shutil.rmtree(production_path)
+        # if os.path.exists(production_path):
+        #     shutil.rmtree(production_path)
         
         # mlflow.artifacts.download_artifacts(artifact_uri=f"runs:/{run.info.run_id}/model", dst_path=production_path)
 
