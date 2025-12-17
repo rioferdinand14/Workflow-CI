@@ -32,7 +32,7 @@ st.markdown("""
 
 @st.cache_resource
 def load_model():
-    with open("frontend/model.pkl", "rb") as f: # Pastikan path benar
+    with open("view/model.pkl", "rb") as f: # Pastikan path benar
         model = pickle.load(f)
     return model
 
