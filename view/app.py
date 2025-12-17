@@ -111,7 +111,7 @@ with col2:
     if predict_btn:
         # Konfigurasi URL Docker vs Localhost
         api_host = os.getenv("EXPORTER_HOST", "exporter") 
-        api_url = f"http://localhost:8000/predict"
+        api_url = f"http://{api_host}/predict"
         
         # Kirim data
         payload = {"dataframe_records": [input_data]}

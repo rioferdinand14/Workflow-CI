@@ -29,7 +29,7 @@ def main():
     
     X_train, X_test, y_train, y_test = train_test_split(X_selected, y, test_size=0.2, random_state=42)
 
-    mlflow.set_tracking_uri("file:./modelling/mlruns")
+    mlflow.set_tracking_uri("file:mlruns")
     mlflow.set_experiment("BreastCancer")
     
     with mlflow.start_run() as run:
