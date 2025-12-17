@@ -42,6 +42,7 @@ except FileNotFoundError:
 
 st.title("🎗️ Breast Cancer Prediction")
 st.markdown("Sistem diagnosis berbasis AI.")
+st.markdown("10 fitur yang dipilih adalah hasil dari Feature Selection menggunakan Embedded Method dengan Random Forest")
 
 def smart_input(label, key, min_val, max_val, default, step=0.01):
     k_slider = f"{key}_slider"
