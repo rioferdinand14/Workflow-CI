@@ -1,0 +1,7 @@
+mlruns/
+data/
+MLProject/breast_cancer_preprocessing/
+modelling/breast_cancer_preprocessing/
+venv/
+inference.py
+prometheus.exe

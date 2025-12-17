@@ -1,0 +1,32 @@
+name: CI-MLflow-Project
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  train_model:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install Conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: bc_ci_env
+          environment-file: ./modelling/conda.yaml
+          auto-activate-base: false
+
+      - name: Run MLflow Project
+        shell: bash -l {0}  # ⬅️ PENTING! agar conda init bisa bekerja
+        run: |
+          cd modelling
+          mlflow run . -e train --env-manager=local
