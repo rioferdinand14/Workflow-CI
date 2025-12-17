@@ -1,9 +1,10 @@
 import streamlit as st
-import requests
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import time
 import os
+import pickle
 
 # --- KONFIGURASI HALAMAN ---
 st.set_page_config(
@@ -28,6 +29,18 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+
+@st.cache_resource
+def load_model():
+    with open("frontend/model.pkl", "rb") as f: # Pastikan path benar
+        model = pickle.load(f)
+    return model
+
+try:
+    model = load_model()
+except FileNotFoundError:
+    st.error("File model.pkl tidak ditemukan di folder frontend!")
+    st.stop()
 
 st.title("🎗️ Breast Cancer Prediction")
 st.markdown("Sistem diagnosis berbasis AI.")
@@ -108,51 +121,49 @@ with col2:
     st.subheader("🔍 Diagnosa AI")
     predict_btn = st.button("ANALISIS PASIEN", type="primary")
 
-    if predict_btn:
-        # Konfigurasi URL Docker vs Localhost
-        api_host = os.getenv("EXPORTER_HOST", "exporter") 
-        api_url = f"http://{api_host}/predict"
-        
-        # Kirim data
-        payload = {"dataframe_records": [input_data]}
+if predict_btn:
+    try:
+        with st.spinner('Memproses Diagnosa...'):
+            # 1. Konversi input data (dict) menjadi Numpy Array 2D
+            # input_data adalah dictionary yang Anda buat dari form slider
+            input_values = list(input_data.values())
+            input_array = np.array(input_values).reshape(1, -1)
 
-        try:
-            with st.spinner('Memproses Diagnosa...'):
-                start_time = time.time()
-                response = requests.post(api_url, json=payload, timeout=5)
-                end_time = time.time()
+            # 2. Prediksi Langsung (Tanpa Internet/API)
+            start_time = time.time()
+            prediction = model.predict(input_array)[0]
+            
+            # Coba ambil probabilitas jika model mendukung
+            try:
+                probability = model.predict_proba(input_array).max()
+            except:
+                probability = 0.0 # Fallback jika model tidak support probability
+            
+            end_time = time.time()
+            latency = round((end_time - start_time), 4)
 
-            if response.status_code == 200:
-                result = response.json()
-                
-                # Parsing
-                if isinstance(result, list): pred = result[0]
-                elif isinstance(result, dict) and "predictions" in result: pred = result["predictions"][0]
-                else: pred = -1
-                
-                latency = round((end_time - start_time), 4)
-                st.success(f"Selesai dalam {latency} detik")
-                
-                if pred == 1:
-                    st.markdown("""
-                        <div style="background-color: #d4edda; padding: 20px; border-radius: 10px; border: 1px solid #c3e6cb;">
-                            <h2 style="color: #155724; text-align: center;">✅ BENIGN (JINAK)</h2>
-                            <p style="text-align: center;">Tidak ditemukan indikasi keganasan.</p>
-                        </div>
-                    """, unsafe_allow_html=True)
-                    st.balloons()
-                elif pred == 0:
-                    st.markdown("""
-                        <div style="background-color: #f8d7da; padding: 20px; border-radius: 10px; border: 1px solid #f5c6cb;">
-                            <h2 style="color: #721c24; text-align: center;">⚠️ MALIGNANT (GANAS)</h2>
-                            <p style="text-align: center;">Terdeteksi karakteristik sel kanker ganas.</p>
-                        </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.warning("Respon tidak valid.")
-            else:
-                st.error(f"Error {response.status_code}: {response.text}")
+        # 3. Tampilkan Hasil
+        st.success(f"Selesai dalam {latency} detik (Running Locally)")
 
-        except Exception as e:
-            st.error("Gagal terhubung ke server Exporter.")
-            st.info("Tips: Pastikan container 'exporter' sudah berjalan.")
+        if prediction == 1: # Benign
+            st.markdown("""
+                <div style="background-color: #d4edda; padding: 20px; border-radius: 10px; border: 1px solid #c3e6cb;">
+                    <h2 style="color: #155724; text-align: center;">✅ BENIGN (JINAK)</h2>
+                    <p style="text-align: center;">Tidak ditemukan indikasi keganasan.</p>
+                </div>
+            """, unsafe_allow_html=True)
+            st.balloons()
+            
+        elif prediction == 0: # Malignant
+            st.markdown("""
+                <div style="background-color: #f8d7da; padding: 20px; border-radius: 10px; border: 1px solid #f5c6cb;">
+                    <h2 style="color: #721c24; text-align: center;">⚠️ MALIGNANT (GANAS)</h2>
+                    <p style="text-align: center;">Terdeteksi karakteristik sel kanker ganas.</p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+        # Tampilkan confidence score
+        st.info(f"Tingkat Kepercayaan Model: {probability:.2%}")
+
+    except Exception as e:
+        st.error(f"Terjadi kesalahan saat prediksi: {e}")
