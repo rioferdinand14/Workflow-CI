@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  view:
+    build: ./view       
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./view:/app/view
+    networks:
+      - mlops-network
+
+  prometheus:
+    build: ./monitoring 
+    ports:
+      - "9090:9090"
+    networks:
+      - mlops-network
+
+networks:
+  mlops-network:
+    driver: bridge
