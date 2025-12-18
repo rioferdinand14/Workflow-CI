@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import time
+import requests
+import json
 import os
 import pickle
 
@@ -28,17 +30,18 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-@st.cache_resource
-def load_model():
-    with open("view/model.pkl", "rb") as f: 
-        model = pickle.load(f)
-    return model
+### If using Embedded model.pkl ###
+# @st.cache_resource
+# def load_model():
+#     with open("model.pkl", "rb") as f: 
+#         model = pickle.load(f)
+#     return model
 
-try:
-    model = load_model()
-except FileNotFoundError:
-    st.error("File model.pkl tidak ditemukan di folder frontend!")
-    st.stop()
+# try:
+#     model = load_model()
+# except FileNotFoundError:
+#     st.error("File model.pkl tidak ditemukan di folder frontend!")
+#     st.stop()
 
 st.title("🎗️ Breast Cancer Prediction")
 st.markdown("Sistem diagnosis berbasis AI.")
@@ -65,14 +68,12 @@ def smart_input(label, key, min_val, max_val, default, step=0.01):
 st.sidebar.header("📝 Input Data Klinis")
 input_data = {}
 
-# Kelompok 1: Mean Attributes (4 Fitur)
 st.sidebar.subheader("1. Mean Attributes")
 input_data['mean perimeter'] = smart_input("Mean Perimeter", "mp", 43.0, 190.0, 92.0)
 input_data['mean area'] = smart_input("Mean Area", "ma", 143.0, 2500.0, 655.0, step=1.0)
 input_data['mean concavity'] = smart_input("Mean Concavity", "mcc", 0.0, 0.43, 0.09, step=0.001)
 input_data['mean concave points'] = smart_input("Mean Concave Points", "mcp", 0.0, 0.20, 0.05, step=0.001)
 
-# Kelompok 2: Worst Attributes (6 Fitur)
 st.sidebar.subheader("2. Worst Attributes")
 input_data['worst radius'] = smart_input("Worst Radius", "wr", 7.0, 37.0, 16.0)
 input_data['worst texture'] = smart_input("Worst Texture", "wt", 12.0, 50.0, 26.0) # <-- Fitur Baru
@@ -81,16 +82,12 @@ input_data['worst area'] = smart_input("Worst Area", "wa", 185.0, 4300.0, 880.0,
 input_data['worst concavity'] = smart_input("Worst Concavity", "wcc_worst", 0.0, 1.26, 0.27, step=0.01)
 input_data['worst concave points'] = smart_input("Worst Concave Points", "wcp_worst", 0.0, 0.30, 0.11, step=0.001)
 
-# --- VISUALISASI ---
 col1, col2 = st.columns([1, 1])
 
 with col1:
     st.subheader("📊 Visualisasi Data")
-    # Radar Chart
     categories = ['Perimeter', 'Area', 'Concavity', 'Concave Pts', 'Texture']
-    
-    # Normalisasi Visual (Agar grafik terbaca)
-    # Mean
+
     mean_vals = [
         input_data['mean perimeter']/190,
         input_data['mean area']/2500,
@@ -118,38 +115,78 @@ with col2:
     st.subheader("🔍 Diagnosa AI")
     predict_btn = st.button("ANALISIS PASIEN", type="primary")
 
-if predict_btn:
+### If using locally served model ###
+if  predict_btn:
+    
+    input_data = pd.DataFrame([input_data]) 
+    
+    payload = {
+        "dataframe_split": input_data.to_dict(orient="split")
+    }
     try:
-        with st.spinner('Memproses Diagnosa...'):
-
-            input_values = list(input_data.values())
-            input_array = np.array(input_values).reshape(1, -1)
-
-            start_time = time.time()
-            prediction = model.predict(input_array)[0]
-            
-            end_time = time.time()
-            latency = round((end_time - start_time), 4)
-
-        # 3. Tampilkan Hasil
-        st.success(f"Selesai dalam {latency} detik")
-
-        if prediction == 1: # Benign
-            st.markdown("""
-                <div style="background-color: #d4edda; padding: 20px; border-radius: 10px; border: 1px solid #c3e6cb;">
-                    <h2 style="color: #155724; text-align: center;">✅ BENIGN (JINAK)</h2>
-                    <p style="text-align: center;">Tidak ditemukan indikasi keganasan.</p>
-                </div>
-            """, unsafe_allow_html=True)
-            st.balloons()
-            
-        elif prediction == 0: # Malignant
-            st.markdown("""
-                <div style="background-color: #f8d7da; padding: 20px; border-radius: 10px; border: 1px solid #f5c6cb;">
-                    <h2 style="color: #721c24; text-align: center;">⚠️ MALIGNANT (GANAS)</h2>
-                    <p style="text-align: center;">Terdeteksi karakteristik sel kanker ganas.</p>
-                </div>
-            """, unsafe_allow_html=True)
+        response = requests.post(
+            url="http://localhost:8000/predict",
+            headers={"Content-Type": "application/json"},
+            data=json.dumps(payload)
+        )
+        if response.status_code == 200:
+            prediction = response.json()['predictions'][0]
+            if prediction == 1: # Benign
+                st.markdown("""
+                    <div style="background-color: #d4edda; padding: 20px; border-radius: 10px; border: 1px solid #c3e6cb;">
+                        <h2 style="color: #155724; text-align: center;">✅ BENIGN (JINAK)</h2>
+                        <p style="text-align: center;">Tidak ditemukan indikasi keganasan.</p>
+                    </div>
+                """, unsafe_allow_html=True)
+                st.balloons()
+                
+            elif prediction == 0: # Malignant
+                st.markdown("""
+                    <div style="background-color: #f8d7da; padding: 20px; border-radius: 10px; border: 1px solid #f5c6cb;">
+                        <h2 style="color: #721c24; text-align: center;">⚠️ MALIGNANT (GANAS)</h2>
+                        <p style="text-align: center;">Terdeteksi karakteristik sel kanker ganas.</p>
+                    </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.error(f"Error API: {response.text}")
 
     except Exception as e:
-        st.error(f"Terjadi kesalahan saat prediksi: {e}")
+        st.error(f"Gagal menghubungi server model. Pastikan port 5002 aktif! Error: {e}")
+
+
+### If using Embedded model.pkl ###
+# if predict_btn:
+#     try:
+#         with st.spinner('Memproses Diagnosa...'):
+
+#             input_values = list(input_data.values())
+#             input_array = np.array(input_values).reshape(1, -1)
+
+#             start_time = time.time()
+#             prediction = model.predict(input_array)[0]
+            
+#             end_time = time.time()
+#             latency = round((end_time - start_time), 4)
+
+#         # 3. Tampilkan Hasil
+#         st.success(f"Selesai dalam {latency} detik")
+
+#         if prediction == 1: # Benign
+#             st.markdown("""
+#                 <div style="background-color: #d4edda; padding: 20px; border-radius: 10px; border: 1px solid #c3e6cb;">
+#                     <h2 style="color: #155724; text-align: center;">✅ BENIGN (JINAK)</h2>
+#                     <p style="text-align: center;">Tidak ditemukan indikasi keganasan.</p>
+#                 </div>
+#             """, unsafe_allow_html=True)
+#             st.balloons()
+            
+#         elif prediction == 0: # Malignant
+#             st.markdown("""
+#                 <div style="background-color: #f8d7da; padding: 20px; border-radius: 10px; border: 1px solid #f5c6cb;">
+#                     <h2 style="color: #721c24; text-align: center;">⚠️ MALIGNANT (GANAS)</h2>
+#                     <p style="text-align: center;">Terdeteksi karakteristik sel kanker ganas.</p>
+#                 </div>
+#             """, unsafe_allow_html=True)
+
+#     except Exception as e:
+#         st.error(f"Terjadi kesalahan saat prediksi: {e}")
